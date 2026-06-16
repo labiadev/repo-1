@@ -5,3 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 [[kv_namespaces]]
 binding = "busquedas"
 id = "ac6d4085914647e3a76a59b3c39a729c"
+
+main = ".vercel/output/static/_worker.js/index.js"
+
+[assets]
+directory = ".vercel/output/static"
