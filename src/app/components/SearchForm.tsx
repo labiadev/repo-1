@@ -61,6 +61,18 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
     setFilteredCharacters(matches.slice(0, 8)); // limit to 8 suggestions
   }, [query, allCharacters]);
 
+  const trackSearch = async (name: string) => {
+    try {
+      await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+    } catch (e) {
+      console.error('Error reporting search history to KV:', e);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (initialLoading) return;
@@ -75,6 +87,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
     setTimeout(() => {
       if (character) {
         onCharacterSelect(character);
+        trackSearch(character.name);
         setIsDropdownOpen(false);
       } else {
         // Try partial match if exact match fails
@@ -83,6 +96,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
         );
         if (partialMatches.length > 0) {
           onCharacterSelect(partialMatches[0]);
+          trackSearch(partialMatches[0].name);
           setQuery(partialMatches[0].name);
           setIsDropdownOpen(false);
         } else {
@@ -96,6 +110,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
   const handleSelectSuggestion = (char: StarWarsCharacter) => {
     setQuery(char.name);
     onCharacterSelect(char);
+    trackSearch(char.name);
     setIsDropdownOpen(false);
     setError(null);
   };
