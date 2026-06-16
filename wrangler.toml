@@ -4,4 +4,4 @@ compatibility_flags = ["nodejs_compat"]
 
 [[kv_namespaces]]
 binding = "busquedas"
-id = "busquedas" # El ID real del KV en Cloudflare se puede rellenar o dejar este como predeterminado
+id = "ac6d4085914647e3a76a59b3c39a729c"
