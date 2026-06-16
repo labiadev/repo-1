@@ -1,0 +1,177 @@
+'use client';
+
+import React, { useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { QRCodeSVG } from 'qrcode.react';
+import { Download, FileText, CheckCircle2, RefreshCw } from 'lucide-react';
+import { StarWarsCharacter, generateCertificateMarkdown } from '../utils/markdownTemplate';
+
+interface CertificatePreviewProps {
+  character: StarWarsCharacter;
+}
+
+export default function CertificatePreview({ character }: CertificatePreviewProps) {
+  const certificateRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  const markdownContent = generateCertificateMarkdown(character);
+  const validationUrl = `https://swapi-app.vercel.app/validate?name=${encodeURIComponent(character.name)}`;
+
+  const handleDownloadPDF = async () => {
+    if (!certificateRef.current) return;
+    setDownloading(true);
+    setDownloadSuccess(false);
+
+    try {
+      // Dynamic import to prevent SSR errors
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const element = certificateRef.current;
+      const opt = {
+        margin:       [0, 0, 0, 0] as [number, number, number, number], // zero margin to keep design full-bleed and control via padding
+        filename:     `Certificado_${character.name.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas:  { 
+          scale: 2.5, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: '#030712' // Force dark background color in canvas
+        },
+        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      };
+
+      // Execute pdf generation
+      await html2pdf().set(opt).from(element).save();
+      
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Hubo un error al generar el PDF. Por favor inténtalo de nuevo.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-12 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Action Bar */}
+      <div className="flex justify-between items-center bg-gray-900/60 backdrop-blur-md border border-amber-500/20 px-6 py-4 rounded-xl shadow-lg">
+        <div className="flex items-center gap-2 text-amber-400 font-medium">
+          <FileText className="w-5 h-5" />
+          <span>Vista Previa del Certificado</span>
+        </div>
+        
+        <button
+          onClick={handleDownloadPDF}
+          disabled={downloading}
+          className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold rounded-lg transition-all duration-300 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+        >
+          {downloading ? (
+            <>
+              <RefreshCw className="w-5 h-5 animate-spin" />
+              <span>Generando PDF...</span>
+            </>
+          ) : downloadSuccess ? (
+            <>
+              <CheckCircle2 className="w-5 h-5 text-emerald-950" />
+              <span>¡Descargado!</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-5 h-5" />
+              <span>Descargar PDF</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Printable Certificate Page */}
+      {/* Standard A4 size ratio matches w-[210mm] and min-h-[297mm] on screen/print */}
+      <div className="overflow-x-auto rounded-2xl shadow-2xl border border-amber-500/30">
+        <div 
+          ref={certificateRef}
+          className="relative w-full min-w-[760px] md:min-w-0 bg-gray-950 text-gray-100 p-12 md:p-16 flex flex-col justify-between leading-relaxed box-border"
+          style={{ minHeight: '842px', width: '100%', maxWidth: '800px', margin: '0 auto' }}
+        >
+          {/* Subtle Outer Galactic Border */}
+          <div className="absolute inset-4 border-2 border-double border-amber-500/20 rounded-xl pointer-events-none" />
+          {/* Subtle Inner Accent Corners */}
+          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-amber-400/40 pointer-events-none" />
+          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-amber-400/40 pointer-events-none" />
+          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-amber-400/40 pointer-events-none" />
+          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-amber-400/40 pointer-events-none" />
+
+          {/* Certificate Content */}
+          <div className="space-y-8 relative z-10">
+            {/* Header Emblem / Art */}
+            <div className="text-center space-y-2 pb-6 border-b border-amber-500/10">
+              <div className="inline-block px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-semibold text-amber-400 uppercase tracking-widest mb-2">
+                Documento de Identificación Imperial
+              </div>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 uppercase font-sans">
+                Archivos Galácticos
+              </h1>
+              <p className="text-xs text-amber-500/60 font-mono tracking-widest">HOLONET SECURE PROTOCOL // CLASIFICADO</p>
+            </div>
+
+            {/* Markdown Rendered Area */}
+            <div className="prose prose-invert prose-amber max-w-none text-gray-300 font-sans space-y-6">
+              <ReactMarkdown
+                components={{
+                  h1: ({ node, ...props }) => <h2 className="text-xl font-bold text-amber-300 uppercase tracking-wide border-b border-amber-500/10 pb-2" {...props} />,
+                  h2: ({ node, ...props }) => <h3 className="text-lg font-semibold text-amber-400 tracking-normal" {...props} />,
+                  h3: ({ node, ...props }) => <h4 className="text-md font-medium text-amber-500/90 uppercase tracking-wider" {...props} />,
+                  p: ({ node, ...props }) => <p className="text-sm text-gray-300" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-2 text-sm text-gray-300" {...props} />,
+                  li: ({ node, ...props }) => <li className="marker:text-amber-500" {...props} />,
+                  hr: ({ node, ...props }) => <hr className="border-t border-amber-500/10 my-4" {...props} />,
+                  strong: ({ node, ...props }) => <strong className="text-amber-300 font-semibold" {...props} />,
+                }}
+              >
+                {markdownContent}
+              </ReactMarkdown>
+            </div>
+          </div>
+
+          {/* Footer Validation Area (QR and Signature) */}
+          <div className="mt-12 pt-8 border-t border-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+            {/* Signature / Authority Seal */}
+            <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
+              <div className="h-10 flex items-center justify-center">
+                <span className="font-mono text-xs text-amber-500/40">SECURE SIGNATURE // H.O.L.O.N.E.T</span>
+              </div>
+              <div className="w-40 border-t border-amber-500/30 pt-1">
+                <p className="text-xs text-amber-400 font-medium">Oficial de Archivo Jedi</p>
+                <p className="text-[10px] text-amber-500/50 uppercase tracking-wider">Cámara del Templo Coruscant</p>
+              </div>
+            </div>
+
+            {/* Dynamic QR Code Block */}
+            <div className="flex items-center gap-4 bg-gray-900/60 p-4 border border-amber-500/20 rounded-xl">
+              <div className="flex flex-col text-right justify-center">
+                <span className="text-xs font-semibold text-amber-400">Verificación QR</span>
+                <span className="text-[9px] text-amber-500/55 font-mono max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                  ID: {character.name.toUpperCase().substring(0, 12)}
+                </span>
+                <span className="text-[8px] text-gray-500 mt-1 hover:text-amber-400 transition-colors break-all max-w-[150px] leading-tight">
+                  swapi-app.vercel.app
+                </span>
+              </div>
+              <div className="bg-white p-2 rounded-lg shrink-0">
+                <QRCodeSVG
+                  value={validationUrl}
+                  size={76}
+                  level="M"
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
