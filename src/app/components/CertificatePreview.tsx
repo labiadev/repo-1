@@ -29,14 +29,14 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
       
       const element = certificateRef.current;
       const opt = {
-        margin:       [0, 0, 0, 0] as [number, number, number, number], // zero margin to keep design full-bleed and control via padding
+        margin:       [0, 0, 0, 0] as [number, number, number, number], // zero margin to keep design full-bleed
         filename:     `Certificado_${character.name.replace(/\s+/g, '_')}.pdf`,
         image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { 
           scale: 2.5, 
           useCORS: true, 
           logging: false,
-          backgroundColor: '#030712' // Force dark background color in canvas
+          backgroundColor: '#FFFFFF' // Force white background color in canvas for light theme PDF
         },
         jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
@@ -57,8 +57,8 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
   return (
     <div className="w-full max-w-4xl mx-auto mt-12 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Action Bar */}
-      <div className="flex justify-between items-center bg-gray-900/60 backdrop-blur-md border border-amber-500/20 px-6 py-4 rounded-xl shadow-lg">
-        <div className="flex items-center gap-2 text-amber-400 font-medium">
+      <div className="flex justify-between items-center bg-white border border-slate-200 px-6 py-4 rounded-xl shadow-md">
+        <div className="flex items-center gap-2 text-indigo-700 font-semibold">
           <FileText className="w-5 h-5" />
           <span>Vista Previa del Certificado</span>
         </div>
@@ -66,7 +66,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
         <button
           onClick={handleDownloadPDF}
           disabled={downloading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold rounded-lg transition-all duration-300 shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all duration-300 shadow-md hover:scale-[1.02] active:scale-95 disabled:opacity-50"
         >
           {downloading ? (
             <>
@@ -75,7 +75,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
             </>
           ) : downloadSuccess ? (
             <>
-              <CheckCircle2 className="w-5 h-5 text-emerald-950" />
+              <CheckCircle2 className="w-5 h-5 text-indigo-100" />
               <span>¡Descargado!</span>
             </>
           ) : (
@@ -89,45 +89,45 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
 
       {/* Printable Certificate Page */}
       {/* Standard A4 size ratio matches w-[210mm] and min-h-[297mm] on screen/print */}
-      <div className="overflow-x-auto rounded-2xl shadow-2xl border border-amber-500/30">
+      <div className="overflow-x-auto rounded-2xl shadow-xl border border-slate-200 bg-white">
         <div 
           ref={certificateRef}
-          className="relative w-full min-w-[760px] md:min-w-0 bg-gray-950 text-gray-100 p-12 md:p-16 flex flex-col justify-between leading-relaxed box-border"
+          className="relative w-full min-w-[760px] md:min-w-0 bg-white text-slate-800 p-12 md:p-16 flex flex-col justify-between leading-relaxed box-border"
           style={{ minHeight: '842px', width: '100%', maxWidth: '800px', margin: '0 auto' }}
         >
-          {/* Subtle Outer Galactic Border */}
-          <div className="absolute inset-4 border-2 border-double border-amber-500/20 rounded-xl pointer-events-none" />
-          {/* Subtle Inner Accent Corners */}
-          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-amber-400/40 pointer-events-none" />
-          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-amber-400/40 pointer-events-none" />
-          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-amber-400/40 pointer-events-none" />
-          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-amber-400/40 pointer-events-none" />
+          {/* Elegant Outer Border */}
+          <div className="absolute inset-4 border-2 border-double border-indigo-600/10 rounded-xl pointer-events-none" />
+          {/* Elegant Inner Accent Corners */}
+          <div className="absolute top-6 left-6 w-8 h-8 border-t-2 border-l-2 border-indigo-600/30 pointer-events-none" />
+          <div className="absolute top-6 right-6 w-8 h-8 border-t-2 border-r-2 border-indigo-600/30 pointer-events-none" />
+          <div className="absolute bottom-6 left-6 w-8 h-8 border-b-2 border-l-2 border-indigo-600/30 pointer-events-none" />
+          <div className="absolute bottom-6 right-6 w-8 h-8 border-b-2 border-r-2 border-indigo-600/30 pointer-events-none" />
 
           {/* Certificate Content */}
           <div className="space-y-8 relative z-10">
             {/* Header Emblem / Art */}
-            <div className="text-center space-y-2 pb-6 border-b border-amber-500/10">
-              <div className="inline-block px-3 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-xs font-semibold text-amber-400 uppercase tracking-widest mb-2">
-                Documento de Identificación Imperial
+            <div className="text-center space-y-2 pb-6 border-b border-slate-100">
+              <div className="inline-block px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-semibold text-indigo-700 uppercase tracking-widest mb-2">
+                Documento de Identificación de la Holonet
               </div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 uppercase font-sans">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-indigo-900 to-indigo-700 uppercase font-sans">
                 Archivos Galácticos
               </h1>
-              <p className="text-xs text-amber-500/60 font-mono tracking-widest">HOLONET SECURE PROTOCOL // CLASIFICADO</p>
+              <p className="text-xs text-slate-400 font-mono tracking-widest">HOLONET SECURE PROTOCOL // CLASIFICADO</p>
             </div>
 
             {/* Markdown Rendered Area */}
-            <div className="prose prose-invert prose-amber max-w-none text-gray-300 font-sans space-y-6">
+            <div className="prose prose-slate max-w-none text-slate-700 font-sans space-y-6">
               <ReactMarkdown
                 components={{
-                  h1: ({ node, ...props }) => <h2 className="text-xl font-bold text-amber-300 uppercase tracking-wide border-b border-amber-500/10 pb-2" {...props} />,
-                  h2: ({ node, ...props }) => <h3 className="text-lg font-semibold text-amber-400 tracking-normal" {...props} />,
-                  h3: ({ node, ...props }) => <h4 className="text-md font-medium text-amber-500/90 uppercase tracking-wider" {...props} />,
-                  p: ({ node, ...props }) => <p className="text-sm text-gray-300" {...props} />,
-                  ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-2 text-sm text-gray-300" {...props} />,
-                  li: ({ node, ...props }) => <li className="marker:text-amber-500" {...props} />,
-                  hr: ({ node, ...props }) => <hr className="border-t border-amber-500/10 my-4" {...props} />,
-                  strong: ({ node, ...props }) => <strong className="text-amber-300 font-semibold" {...props} />,
+                  h1: ({ node, ...props }) => <h2 className="text-xl font-bold text-indigo-900 uppercase tracking-wide border-b border-slate-100 pb-2" {...props} />,
+                  h2: ({ node, ...props }) => <h3 className="text-lg font-semibold text-indigo-700 tracking-normal" {...props} />,
+                  h3: ({ node, ...props }) => <h4 className="text-md font-medium text-slate-600 uppercase tracking-wider" {...props} />,
+                  p: ({ node, ...props }) => <p className="text-sm text-slate-600" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-2 text-sm text-slate-600" {...props} />,
+                  li: ({ node, ...props }) => <li className="marker:text-indigo-500" {...props} />,
+                  hr: ({ node, ...props }) => <hr className="border-t border-slate-100 my-4" {...props} />,
+                  strong: ({ node, ...props }) => <strong className="text-indigo-950 font-bold" {...props} />,
                 }}
               >
                 {markdownContent}
@@ -136,30 +136,30 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
           </div>
 
           {/* Footer Validation Area (QR and Signature) */}
-          <div className="mt-12 pt-8 border-t border-amber-500/10 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
             {/* Signature / Authority Seal */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
               <div className="h-10 flex items-center justify-center">
-                <span className="font-mono text-xs text-amber-500/40">SECURE SIGNATURE // H.O.L.O.N.E.T</span>
+                <span className="font-mono text-[10px] text-slate-400">SECURE SIGNATURE // H.O.L.O.N.E.T</span>
               </div>
-              <div className="w-40 border-t border-amber-500/30 pt-1">
-                <p className="text-xs text-amber-400 font-medium">Oficial de Archivo Jedi</p>
-                <p className="text-[10px] text-amber-500/50 uppercase tracking-wider">Cámara del Templo Coruscant</p>
+              <div className="w-40 border-t border-slate-200 pt-1">
+                <p className="text-xs text-slate-800 font-semibold">Oficial de Archivo Jedi</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Cámara del Templo Coruscant</p>
               </div>
             </div>
 
             {/* Dynamic QR Code Block */}
-            <div className="flex items-center gap-4 bg-gray-900/60 p-4 border border-amber-500/20 rounded-xl">
+            <div className="flex items-center gap-4 bg-slate-50 p-4 border border-slate-100 rounded-xl">
               <div className="flex flex-col text-right justify-center">
-                <span className="text-xs font-semibold text-amber-400">Verificación QR</span>
-                <span className="text-[9px] text-amber-500/55 font-mono max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                <span className="text-xs font-semibold text-slate-800">Verificación QR</span>
+                <span className="text-[9px] text-slate-500 font-mono max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
                   ID: {character.name.toUpperCase().substring(0, 12)}
                 </span>
-                <span className="text-[8px] text-gray-500 mt-1 hover:text-amber-400 transition-colors break-all max-w-[150px] leading-tight">
+                <span className="text-[8px] text-indigo-600 font-medium mt-1 break-all max-w-[150px] leading-tight">
                   swapi-app.vercel.app
                 </span>
               </div>
-              <div className="bg-white p-2 rounded-lg shrink-0">
+              <div className="bg-white p-2 rounded-lg shrink-0 border border-slate-100">
                 <QRCodeSVG
                   value={validationUrl}
                   size={76}

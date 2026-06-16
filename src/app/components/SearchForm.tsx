@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Sparkles, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Search, Sparkles, AlertCircle } from 'lucide-react';
 import { StarWarsCharacter } from '../utils/markdownTemplate';
+import BB8Loader from './BB8Loader';
 
 interface SearchFormProps {
   onCharacterSelect: (character: StarWarsCharacter) => void;
@@ -28,7 +29,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
         const data = await res.json();
         setAllCharacters(data);
       } catch (err: any) {
-        setError(err.message || 'No se pudo conectar con los servidores imperiales.');
+        setError(err.message || 'No se pudo conectar con los servidores de la Nueva República.');
       } finally {
         setInitialLoading(false);
       }
@@ -89,7 +90,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
         }
       }
       setLoading(false);
-    }, 600); // Small delay for premium feel and visual loading state
+    }, 1200); // Dynamic delay to appreciate the BB-8 animation
   };
 
   const handleSelectSuggestion = (char: StarWarsCharacter) => {
@@ -100,76 +101,80 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto z-20">
-      <form onSubmit={handleSubmit} className="relative space-y-4">
-        <div className="relative" ref={dropdownRef}>
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setIsDropdownOpen(true);
-                setError(null);
-              }}
-              onFocus={() => setIsDropdownOpen(true)}
-              placeholder="Buscar personaje (ej: Luke Skywalker, Darth Vader...)"
-              disabled={initialLoading}
-              className="w-full px-5 py-4 pl-12 bg-gray-900/80 backdrop-blur-md text-amber-100 placeholder-gray-500 rounded-xl border border-amber-500/30 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-all duration-300 shadow-lg"
-            />
-            <Search className="absolute left-4 w-5 h-5 text-amber-500/60" />
-            
-            <button
-              type="submit"
-              disabled={initialLoading || loading || !query.trim()}
-              className="absolute right-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-gray-950 font-bold rounded-lg flex items-center gap-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-amber-500/20 hover:scale-[1.02] active:scale-95"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+    <div className="w-full max-w-2xl mx-auto z-20 space-y-6">
+      {/* BB-8 Loading State for submission */}
+      {loading && (
+        <div className="bg-white/80 backdrop-blur-md border border-slate-200 p-6 rounded-2xl shadow-xl animate-in fade-in zoom-in-95 duration-200">
+          <BB8Loader message="Buscando coordenadas del personaje en la Holonet..." />
+        </div>
+      )}
+
+      {!loading && (
+        <form onSubmit={handleSubmit} className="relative space-y-4">
+          <div className="relative" ref={dropdownRef}>
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setIsDropdownOpen(true);
+                  setError(null);
+                }}
+                onFocus={() => setIsDropdownOpen(true)}
+                placeholder="Buscar personaje (ej: Luke Skywalker, Darth Vader...)"
+                disabled={initialLoading}
+                className="w-full px-5 py-4 pl-12 bg-white/90 backdrop-blur-sm text-slate-800 placeholder-slate-400 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 focus:outline-none transition-all duration-300 shadow-md"
+              />
+              <Search className="absolute left-4 w-5 h-5 text-slate-400" />
+              
+              <button
+                type="submit"
+                disabled={initialLoading || loading || !query.trim()}
+                className="absolute right-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg flex items-center gap-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:scale-[1.02] active:scale-95"
+              >
                 <Sparkles className="w-4 h-4" />
-              )}
-              <span>Generar</span>
-            </button>
+                <span>Generar</span>
+              </button>
+            </div>
+
+            {/* Autocomplete Dropdown */}
+            {isDropdownOpen && filteredCharacters.length > 0 && (
+              <div className="absolute w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-30 transition-all max-h-60 overflow-y-auto">
+                {filteredCharacters.map((char, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSelectSuggestion(char)}
+                    className="w-full text-left px-5 py-3 hover:bg-slate-50 text-slate-800 border-b border-slate-100 last:border-b-0 transition-colors flex items-center justify-between"
+                  >
+                    <span className="font-medium">{char.name}</span>
+                    <span className="text-xs text-indigo-500/60 font-semibold uppercase tracking-wider">{char.gender}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Autocomplete Dropdown */}
-          {isDropdownOpen && filteredCharacters.length > 0 && (
-            <div className="absolute w-full mt-2 bg-gray-950/95 border border-amber-500/20 rounded-xl shadow-2xl backdrop-blur-xl overflow-hidden z-30 transition-all max-h-60 overflow-y-auto">
-              {filteredCharacters.map((char, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handleSelectSuggestion(char)}
-                  className="w-full text-left px-5 py-3 hover:bg-amber-500/10 text-amber-200 border-b border-amber-500/5 last:border-b-0 transition-colors flex items-center justify-between"
-                >
-                  <span className="font-medium">{char.name}</span>
-                  <span className="text-xs text-amber-500/50 uppercase tracking-widest">{char.gender}</span>
-                </button>
-              ))}
+          {/* Initial database load */}
+          {initialLoading && (
+            <div className="bg-white/80 border border-slate-200 p-6 rounded-2xl shadow-md">
+              <BB8Loader message="Inicializando base de datos galáctica..." />
             </div>
           )}
-        </div>
 
-        {/* Loading Database Overlay */}
-        {initialLoading && (
-          <div className="flex items-center gap-3 text-amber-500/70 justify-center text-sm mt-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Sincronizando con los archivos de la Holonet...</span>
-          </div>
-        )}
-
-        {/* Error Alert */}
-        {error && (
-          <div className="flex items-start gap-3 p-4 bg-red-950/40 border border-red-500/30 rounded-xl text-red-300 mt-2 shadow-lg animate-in fade-in slide-in-from-top-1 duration-200">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium">Error de Conexión o Archivo No Encontrado</p>
-              <p className="text-sm text-red-400">{error}</p>
+          {/* Error Alert */}
+          {error && (
+            <div className="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 mt-2 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
+              <div>
+                <p className="font-semibold text-rose-900">Coordenadas Inválidas</p>
+                <p className="text-sm">{error}</p>
+              </div>
             </div>
-          </div>
-        )}
-      </form>
+          )}
+        </form>
+      )}
     </div>
   );
 }
