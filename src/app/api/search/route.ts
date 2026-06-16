@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';

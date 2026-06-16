@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import React, { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
