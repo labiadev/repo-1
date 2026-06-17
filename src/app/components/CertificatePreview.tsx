@@ -16,6 +16,30 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
   const [downloading, setDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
+  const [timestamp] = useState(() => {
+    const d = new Date();
+    return d.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).toUpperCase() + ' ' + d.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  });
+
+  const hash = React.useMemo(() => {
+    let value = 0;
+    const key = `${character.name}-${character.birth_year}-${timestamp}`;
+    for (let i = 0; i < key.length; i++) {
+      value = (value << 5) - value + key.charCodeAt(i);
+      value |= 0;
+    }
+    const hex = Math.abs(value).toString(16).padStart(8, '0');
+    return `9F4C${hex}B204DA51CF94D80A13`.substring(0, 24).toUpperCase();
+  }, [character, timestamp]);
+
   const markdownContent = generateCertificateMarkdown(character);
   const validationUrl = `https://starwars.esign.company/?name=${encodeURIComponent(character.name)}`;
 
@@ -155,9 +179,9 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
           </div>
 
           {/* Footer Validation Area (QR and Signature) */}
-          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
             {/* Signature / Authority Seal */}
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
               <div className="h-10 flex items-center justify-center">
                 <span className="font-mono text-[10px] text-slate-400">SECURE DIGITAL SIGNATURE by ESIGN</span>
               </div>
@@ -165,6 +189,18 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
                 <p className="text-xs text-slate-800 font-semibold">Oficial de Archivo Jedi</p>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Cámara del Templo Coruscant</p>
               </div>
+            </div>
+
+            {/* Cryptographic Timestamping Seal */}
+            <div className="flex flex-col items-center text-center space-y-1 bg-slate-50/50 px-4 py-3 rounded-lg border border-slate-100 max-w-xs">
+              <span className="text-[8px] font-bold text-slate-400 tracking-widest uppercase font-mono">ESIGN TSA // TIMESTAMPING SECURE</span>
+              <span className="text-xs font-semibold text-indigo-950 font-mono">{timestamp}</span>
+              <span className="text-[8px] text-slate-400 font-mono max-w-[190px] truncate">
+                HASH: {hash}
+              </span>
+              <span className="text-[8px] text-indigo-600 font-bold uppercase tracking-wide">
+                AUTORIDAD DE SELLADO ESIGN
+              </span>
             </div>
 
             {/* Dynamic QR Code Block */}
