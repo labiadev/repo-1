@@ -5,11 +5,24 @@
   --foreground: #171717;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Override indigo theme to match ESIGN brand colors (esign-la.com) */
+  --color-indigo-50: #f0f6fc;
+  --color-indigo-100: #dceaf7;
+  --color-indigo-200: #bed6f0;
+  --color-indigo-300: #93bae5;
+  --color-indigo-400: #5f97d5;
+  --color-indigo-500: #105faf;
+  --color-indigo-600: #0c4da2;
+  --color-indigo-700: #0a4189;
+  --color-indigo-800: #08356f;
+  --color-indigo-900: #072d5f;
+  --color-indigo-950: #051c3c;
 }
 
 @media (prefers-color-scheme: dark) {
