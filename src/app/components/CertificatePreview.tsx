@@ -40,6 +40,17 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     return `9F4C${hex}B204DA51CF94D80A13`.substring(0, 24).toUpperCase();
   }, [character, timestamp]);
 
+  const signatureText = React.useMemo(() => {
+    const parts = character.name.split(' ');
+    if (parts.length > 1) {
+      const firstNameInitial = parts[0].charAt(0).toUpperCase();
+      const lastName = parts[parts.length - 1];
+      const formattedLastName = lastName.length > 10 ? lastName.substring(0, 10) + '.' : lastName;
+      return `${firstNameInitial}. ${formattedLastName}`;
+    }
+    return character.name;
+  }, [character]);
+
   const signature = React.useMemo(() => {
     let hashVal = 0;
     const name = character.name;
@@ -54,47 +65,24 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     };
 
     const points = [];
-    const numLoops = 4 + Math.floor(random(1) * 5); // 4 to 8 loops
     const width = 160;
     
-    // Brand features
-    const heightFactor = 0.5 + random(10) * 0.8; // height scale
-    const firstLetterSize = 1.5 + random(11) * 1.5; // capital letter scale (1.5x to 3.0x)
-    const slant = -6 + Math.floor(random(12) * 12); // -6deg to +6deg slant
+    const slant = -5 + Math.floor(random(12) * 10);
+    const flourishType = random(13);
     
-    let currentX = 12 + random(13) * 8;
-    const startY = 22 + (random(14) * 12 - 6);
-    points.push(`M ${currentX} ${startY}`);
-    
-    for (let i = 0; i < numLoops; i++) {
-      const nextX = currentX + (width - 35) / numLoops;
-      const isFirst = i === 0;
+    if (flourishType < 0.6) {
+      const loopY = 28 + random(14) * 4;
+      points.push(`M 15 ${loopY - 2} Q ${width / 2} ${loopY + 2}, ${width - 15} ${loopY}`);
+      points.push(`C ${width + 5} ${loopY + 8}, ${width - 30} ${loopY + 12}, 12 ${loopY - 1}`);
+    } else {
+      const startX = 20 + random(14) * 15;
+      const startY = 12 + random(15) * 8;
+      const endX = width - 15 - random(16) * 15;
+      const endY = 28 + random(17) * 8;
       
-      // Control points for bezier curves
-      const cp1x = currentX + (nextX - currentX) * 0.25;
-      const cp1y = isFirst
-        ? 25 - (15 * firstLetterSize * heightFactor) // Large capital peak
-        : 25 - (12 * heightFactor * (0.8 + random(i * 3 + 3) * 0.4)); // normal loop peak
-        
-      const cp2x = currentX + (nextX - currentX) * 0.75;
-      const cp2y = 25 + (12 * heightFactor * (0.8 + random(i * 3 + 4) * 0.4)); // normal loop trough
-      
-      const endY = 25 + (random(i * 3 + 5) * 6 - 3) * heightFactor;
-      
-      points.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${nextX} ${endY}`);
-      currentX = nextX;
-    }
-    
-    // Underline style (75% have an underline, 15% loop back, 10% plain)
-    const lineType = random(15);
-    if (lineType < 0.75) {
-      const underlineStartY = 32 + random(16) * 4;
-      const underlineEndY = underlineStartY + (random(17) * 4 - 2);
-      points.push(`M 8 ${underlineStartY} Q ${width / 2} ${underlineStartY - 2}, ${width - 8} ${underlineEndY}`);
-    } else if (lineType < 0.9) {
-      // Swirly loop underline back to start
-      const loopY = 32 + random(18) * 4;
-      points.push(`M ${width - 15} ${loopY} C ${width + 5} ${loopY + 10}, ${width - 30} ${loopY + 15}, 12 ${loopY - 2}`);
+      points.push(`M ${startX} ${startY}`);
+      points.push(`Q ${startX + 30} ${startY + 15}, ${endX} ${endY}`);
+      points.push(`M ${endX - 10} ${endY + 2} Q ${width / 2} ${endY + 6}, 10 ${endY + 1}`);
     }
     
     return {
@@ -249,17 +237,32 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
                 {/* SVG Dynamic Handwritten Signature */}
                 <svg 
                   className="absolute w-full h-full -top-2 left-0 pointer-events-none transition-transform duration-300" 
-                  style={{ transform: `rotate(${signature.rotation}deg)` }}
+                  style={{ transform: `rotate(${signature.rotation}deg)`, transformOrigin: 'center center' }}
                   viewBox="0 0 160 50"
                 >
+                  {/* Cursive initials/name text */}
+                  <text
+                    x="80"
+                    y="25"
+                    fontFamily="'Alex Brush', cursive"
+                    fontSize="22"
+                    fill="#0c4da2"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="opacity-90 animate-in fade-in duration-500 select-none"
+                  >
+                    {signatureText}
+                  </text>
+                  
+                  {/* Dynamic hand-drawn flourish overlay */}
                   <path
                     d={signature.path}
                     fill="none"
                     stroke="#0c4da2"
-                    strokeWidth="2"
+                    strokeWidth="1.8"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="opacity-85 animate-in fade-in duration-500"
+                    className="opacity-75 animate-in fade-in duration-500"
                   />
                 </svg>
                 <span className="font-mono text-[8px] text-slate-400/70 uppercase absolute bottom-0">SECURE DIGITAL SIGNATURE by ESIGN</span>
