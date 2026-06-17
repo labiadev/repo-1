@@ -37,7 +37,19 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
         scale: 2.5,
         useCORS: true,
         logging: false,
-        backgroundColor: '#FFFFFF'
+        backgroundColor: '#FFFFFF',
+        windowWidth: 800,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.querySelector('[data-certificate]') as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.width = '800px';
+            clonedElement.style.minWidth = '800px';
+            clonedElement.style.maxWidth = '800px';
+            clonedElement.style.minHeight = '1130px';
+            clonedElement.style.height = '1130px';
+            clonedElement.style.padding = '64px';
+          }
+        }
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
@@ -47,11 +59,8 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
         format: 'a4'
       });
 
-      // A4 page dimensions
-      const imgWidth = 210; // mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      // A4 page dimensions (210mm x 297mm)
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
       pdf.save(`Certificado_${character.name.replace(/\s+/g, '_')}.pdf`);
       
       setDownloadSuccess(true);
@@ -98,12 +107,12 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
       </div>
 
       {/* Printable Certificate Page */}
-      {/* Standard A4 size ratio matches w-[210mm] and min-h-[297mm] on screen/print */}
-      <div className="overflow-x-auto rounded-2xl shadow-xl border border-slate-200 bg-white">
+      <div className="w-full rounded-2xl shadow-xl border border-slate-200 bg-white overflow-hidden">
         <div 
           ref={certificateRef}
-          className="relative w-full min-w-[760px] md:min-w-0 bg-white text-slate-800 p-12 md:p-16 flex flex-col justify-between leading-relaxed box-border"
-          style={{ minHeight: '842px', width: '100%', maxWidth: '800px', margin: '0 auto' }}
+          data-certificate
+          className="relative w-full bg-white text-slate-800 p-6 sm:p-12 md:p-16 flex flex-col justify-between leading-relaxed box-border transition-all duration-300"
+          style={{ minHeight: '600px', maxWidth: '800px', margin: '0 auto' }}
         >
           {/* Elegant Outer Border */}
           <div className="absolute inset-4 border-2 border-double border-indigo-600/10 rounded-xl pointer-events-none" />
