@@ -40,7 +40,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     return `9F4C${hex}B204DA51CF94D80A13`.substring(0, 24).toUpperCase();
   }, [character, timestamp]);
 
-  const signaturePath = React.useMemo(() => {
+  const signature = React.useMemo(() => {
     let hashVal = 0;
     const name = character.name;
     for (let i = 0; i < name.length; i++) {
@@ -54,30 +54,53 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     };
 
     const points = [];
-    const numLoops = 5 + Math.floor(random(1) * 3);
+    const numLoops = 4 + Math.floor(random(1) * 5); // 4 to 8 loops
     const width = 160;
     
-    let currentX = 15;
-    const currentY = 25 + (random(2) * 8 - 4);
-    points.push(`M ${currentX} ${currentY}`);
+    // Brand features
+    const heightFactor = 0.5 + random(10) * 0.8; // height scale
+    const firstLetterSize = 1.5 + random(11) * 1.5; // capital letter scale (1.5x to 3.0x)
+    const slant = -6 + Math.floor(random(12) * 12); // -6deg to +6deg slant
+    
+    let currentX = 12 + random(13) * 8;
+    const startY = 22 + (random(14) * 12 - 6);
+    points.push(`M ${currentX} ${startY}`);
     
     for (let i = 0; i < numLoops; i++) {
-      const nextX = currentX + (width - 30) / numLoops;
+      const nextX = currentX + (width - 35) / numLoops;
+      const isFirst = i === 0;
+      
+      // Control points for bezier curves
       const cp1x = currentX + (nextX - currentX) * 0.25;
-      const cp1y = 8 + random(i * 3 + 3) * 14;
+      const cp1y = isFirst
+        ? 25 - (15 * firstLetterSize * heightFactor) // Large capital peak
+        : 25 - (12 * heightFactor * (0.8 + random(i * 3 + 3) * 0.4)); // normal loop peak
+        
       const cp2x = currentX + (nextX - currentX) * 0.75;
-      const cp2y = 38 - random(i * 3 + 4) * 14;
-      const endY = 23 + (random(i * 3 + 5) * 6 - 3);
+      const cp2y = 25 + (12 * heightFactor * (0.8 + random(i * 3 + 4) * 0.4)); // normal loop trough
+      
+      const endY = 25 + (random(i * 3 + 5) * 6 - 3) * heightFactor;
       
       points.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${nextX} ${endY}`);
       currentX = nextX;
     }
     
-    const underlineStartY = 30 + random(20) * 4;
-    const underlineEndY = underlineStartY + (random(21) * 4 - 2);
-    points.push(`M 10 ${underlineStartY} Q ${width / 2} ${underlineStartY - 2}, ${width - 10} ${underlineEndY}`);
+    // Underline style (75% have an underline, 15% loop back, 10% plain)
+    const lineType = random(15);
+    if (lineType < 0.75) {
+      const underlineStartY = 32 + random(16) * 4;
+      const underlineEndY = underlineStartY + (random(17) * 4 - 2);
+      points.push(`M 8 ${underlineStartY} Q ${width / 2} ${underlineStartY - 2}, ${width - 8} ${underlineEndY}`);
+    } else if (lineType < 0.9) {
+      // Swirly loop underline back to start
+      const loopY = 32 + random(18) * 4;
+      points.push(`M ${width - 15} ${loopY} C ${width + 5} ${loopY + 10}, ${width - 30} ${loopY + 15}, 12 ${loopY - 2}`);
+    }
     
-    return points.join(' ');
+    return {
+      path: points.join(' '),
+      rotation: slant
+    };
   }, [character]);
 
   const markdownContent = generateCertificateMarkdown(character);
@@ -224,9 +247,13 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-1 relative">
               <div className="h-16 w-44 flex items-center justify-center relative select-none">
                 {/* SVG Dynamic Handwritten Signature */}
-                <svg className="absolute w-full h-full -top-2 left-0 pointer-events-none transform rotate-[-2deg]" viewBox="0 0 160 50">
+                <svg 
+                  className="absolute w-full h-full -top-2 left-0 pointer-events-none transition-transform duration-300" 
+                  style={{ transform: `rotate(${signature.rotation}deg)` }}
+                  viewBox="0 0 160 50"
+                >
                   <path
-                    d={signaturePath}
+                    d={signature.path}
                     fill="none"
                     stroke="#0c4da2"
                     strokeWidth="2"
