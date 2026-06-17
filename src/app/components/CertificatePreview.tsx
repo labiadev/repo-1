@@ -25,25 +25,34 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     setDownloadSuccess(false);
 
     try {
-      // Dynamic import to prevent SSR errors
-      const html2pdf = (await import('html2pdf.js')).default;
+      // Dynamic imports to prevent SSR errors
+      const html2canvasModule = await import('html2canvas-pro');
+      const html2canvas = html2canvasModule.default || html2canvasModule;
+      const { jsPDF } = await import('jspdf');
       
       const element = certificateRef.current;
-      const opt = {
-        margin:       [0, 0, 0, 0] as [number, number, number, number], // zero margin to keep design full-bleed
-        filename:     `Certificado_${character.name.replace(/\s+/g, '_')}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { 
-          scale: 2.5, 
-          useCORS: true, 
-          logging: false,
-          backgroundColor: '#FFFFFF' // Force white background color in canvas for light theme PDF
-        },
-        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-      };
+      
+      // Render the HTML element to a canvas using html2canvas-pro (which supports oklch)
+      const canvas = await html2canvas(element, {
+        scale: 2.5,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#FFFFFF'
+      });
 
-      // Execute pdf generation
-      await html2pdf().set(opt).from(element).save();
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // A4 page dimensions
+      const imgWidth = 210; // mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`Certificado_${character.name.replace(/\s+/g, '_')}.pdf`);
       
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
