@@ -1,5 +1,5 @@
 name = "repo-1"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-06-16"
 compatibility_flags = ["nodejs_compat"]
 main = ".vercel/output/static/_worker.js/index.js"
 
@@ -10,3 +10,17 @@ binding = "ASSETS"
 [[kv_namespaces]]
 binding = "busquedas"
 id = "ac6d4085914647e3a76a59b3c39a729c"
+
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "repo-1"
+
+[images]
+binding = "IMAGES"
+
+[observability]
+enabled = true
+
+[[routes]]
+pattern = "starwars.esign.company"
+custom_domain = true
