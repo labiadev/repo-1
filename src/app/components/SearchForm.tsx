@@ -29,6 +29,31 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
         if (!res.ok) throw new Error('Error al cargar la base de datos de la Holonet');
         const data = await res.json();
         setAllCharacters(data);
+
+        // Auto-search character from URL query parameter
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const nameParam = params.get('name');
+          if (nameParam) {
+            const sanitizedParam = nameParam.trim().toLowerCase();
+            const character = data.find(
+              (char: StarWarsCharacter) => char.name.toLowerCase() === sanitizedParam
+            );
+            if (character) {
+              setQuery(character.name);
+              onCharacterSelect(character);
+            } else {
+              // Try partial match
+              const partialMatches = data.filter((char: StarWarsCharacter) =>
+                char.name.toLowerCase().includes(sanitizedParam)
+              );
+              if (partialMatches.length > 0) {
+                setQuery(partialMatches[0].name);
+                onCharacterSelect(partialMatches[0]);
+              }
+            }
+          }
+        }
       } catch (err: any) {
         setError(err.message || 'No se pudo conectar con los servidores de la Nueva República.');
       } finally {
@@ -36,7 +61,7 @@ export default function SearchForm({ onCharacterSelect }: SearchFormProps) {
       }
     }
     fetchCharacters();
-  }, []);
+  }, [onCharacterSelect]);
 
   // Handle outside click to close dropdown
   useEffect(() => {

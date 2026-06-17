@@ -17,7 +17,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
   const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const markdownContent = generateCertificateMarkdown(character);
-  const validationUrl = `https://swapi-app.vercel.app/validate?name=${encodeURIComponent(character.name)}`;
+  const validationUrl = `https://starwars.esign.company/?name=${encodeURIComponent(character.name)}`;
 
   const handleDownloadPDF = async () => {
     if (!certificateRef.current) return;
@@ -150,7 +150,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
             {/* Signature / Authority Seal */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-2">
               <div className="h-10 flex items-center justify-center">
-                <span className="font-mono text-[10px] text-slate-400">SECURE SIGNATURE // H.O.L.O.N.E.T</span>
+                <span className="font-mono text-[10px] text-slate-400">SECURE DIGITAL SIGNATURE by ESIGN</span>
               </div>
               <div className="w-40 border-t border-slate-200 pt-1">
                 <p className="text-xs text-slate-800 font-semibold">Oficial de Archivo Jedi</p>
@@ -166,7 +166,7 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
                   ID: {character.name.toUpperCase().substring(0, 12)}
                 </span>
                 <span className="text-[8px] text-indigo-600 font-medium mt-1 break-all max-w-[150px] leading-tight">
-                  swapi-app.vercel.app
+                  starwars.esign.company
                 </span>
               </div>
               <div className="bg-white p-2 rounded-lg shrink-0 border border-slate-100">
