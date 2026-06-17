@@ -40,6 +40,46 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
     return `9F4C${hex}B204DA51CF94D80A13`.substring(0, 24).toUpperCase();
   }, [character, timestamp]);
 
+  const signaturePath = React.useMemo(() => {
+    let hashVal = 0;
+    const name = character.name;
+    for (let i = 0; i < name.length; i++) {
+      hashVal = (hashVal << 5) - hashVal + name.charCodeAt(i);
+      hashVal |= 0;
+    }
+    
+    const random = (seedOffset: number) => {
+      const x = Math.sin(hashVal + seedOffset) * 10000;
+      return x - Math.floor(x);
+    };
+
+    const points = [];
+    const numLoops = 5 + Math.floor(random(1) * 3);
+    const width = 160;
+    
+    let currentX = 15;
+    const currentY = 25 + (random(2) * 8 - 4);
+    points.push(`M ${currentX} ${currentY}`);
+    
+    for (let i = 0; i < numLoops; i++) {
+      const nextX = currentX + (width - 30) / numLoops;
+      const cp1x = currentX + (nextX - currentX) * 0.25;
+      const cp1y = 8 + random(i * 3 + 3) * 14;
+      const cp2x = currentX + (nextX - currentX) * 0.75;
+      const cp2y = 38 - random(i * 3 + 4) * 14;
+      const endY = 23 + (random(i * 3 + 5) * 6 - 3);
+      
+      points.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${nextX} ${endY}`);
+      currentX = nextX;
+    }
+    
+    const underlineStartY = 30 + random(20) * 4;
+    const underlineEndY = underlineStartY + (random(21) * 4 - 2);
+    points.push(`M 10 ${underlineStartY} Q ${width / 2} ${underlineStartY - 2}, ${width - 10} ${underlineEndY}`);
+    
+    return points.join(' ');
+  }, [character]);
+
   const markdownContent = generateCertificateMarkdown(character);
   const validationUrl = `https://starwars.esign.company/?name=${encodeURIComponent(character.name)}`;
 
@@ -181,11 +221,23 @@ export default function CertificatePreview({ character }: CertificatePreviewProp
           {/* Footer Validation Area (QR and Signature) */}
           <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
             {/* Signature / Authority Seal */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
-              <div className="h-10 flex items-center justify-center">
-                <span className="font-mono text-[10px] text-slate-400">SECURE DIGITAL SIGNATURE by ESIGN</span>
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-1 relative">
+              <div className="h-16 w-44 flex items-center justify-center relative select-none">
+                {/* SVG Dynamic Handwritten Signature */}
+                <svg className="absolute w-full h-full -top-2 left-0 pointer-events-none transform rotate-[-2deg]" viewBox="0 0 160 50">
+                  <path
+                    d={signaturePath}
+                    fill="none"
+                    stroke="#0c4da2"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="opacity-85 animate-in fade-in duration-500"
+                  />
+                </svg>
+                <span className="font-mono text-[8px] text-slate-400/70 uppercase absolute bottom-0">SECURE DIGITAL SIGNATURE by ESIGN</span>
               </div>
-              <div className="w-40 border-t border-slate-200 pt-1">
+              <div className="w-44 border-t border-slate-200 pt-1">
                 <p className="text-xs text-slate-800 font-semibold">Oficial de Archivo Jedi</p>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Cámara del Templo Coruscant</p>
               </div>
